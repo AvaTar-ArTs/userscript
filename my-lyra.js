@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         Lyra Exporter Pro (Ultimate One-Click AI Chat Backup)
+// @name         My Lyra Exporter Pro (Ultimate One-Click AI Chat Backup)
 // @description  Ultimate one-click exporter for Claude, ChatGPT, Grok, Gemini, Google AI Studio & NotebookLM. Full branch/artifacts/attachments support. Direct exports: JSON, Markdown, PDF, Long PNG Screenshot, ZIP bundles. No external app required. Realtime Gemini versioning, enhanced image/artifact capture, batch export with progress.
-// @namespace    userscript://lyra-conversation-exporter-pro
-// @version      9.0
-// @homepage     https://github.com/Yalums/lyra-exporter/
-// @supportURL   https://github.com/Yalums/lyra-exporter/issues
-// @author       Yalums (enhanced by Grok)
+// @namespace    https://github.com/AvaTar-ArTs/userscript
+// @version      9.1
+// @homepage     https://github.com/AvaTar-ArTs/userscript
+// @supportURL   https://github.com/AvaTar-ArTs/userscript/issues
+// @author       AvaTar-ArTs (Steven @promptocalypse) - Forked & enhanced from Yalums/Grok original
 // @match        https://claude.ai/*
 // @match        https://claude.easychat.top/*
 // @match        https://pro.easychat.top/*
@@ -30,9 +30,13 @@
 // @require      https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.js
 // @require      https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js
 // @license      GNU General Public License v3.0
-// @downloadURL  https://update.greasyfork.org/scripts/539579/Lyra%20Exporter%20Pro.user.js
-// @updateURL    https://update.greasyfork.org/scripts/539579/Lyra%20Exporter%20Pro.meta.js
 // ==/UserScript==
+
+/*
+ * My Lyra Exporter Pro - Personal fork by AvaTar-ArTs (@promptocalypse)
+ * Original concept by Yalums, heavily enhanced with Grok's help.
+ * Hosted at: https://github.com/AvaTar-ArTs/userscript
+ */
 
 (function () {
     'use strict';
@@ -85,11 +89,11 @@
     };
 
     const icons = {
-        preview: '<svg viewBox="0 0 24 24" width="16"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>',
-        export: '<svg viewBox="0 0 24 24" width="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>',
-        zip: '<svg viewBox="0 0 24 24" width="16"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 10H8v-2h4v2zm4-4H8v-2h8v2zm-4-4H8V6h4v2z"/></svg>',
-        collapse: '<svg viewBox="0 0 24 24" width="14"><path d="M15 18l-6-6 6-6"/></svg>',
-        expand: '<svg viewBox="0 0 24 24" width="14"><path d="M9 18l6-6-6-6"/></svg>'
+        preview: '<svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/></svg>',
+        export: '<svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        zip: '<svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 11V9a7 7 0 0 0-7-7 7 7 0 0 0-7 7v2"/><rect x="3" y="11" width="18" height="10" rx="2"/></svg>',
+        collapse: '<svg viewBox="0 0 24 24" width="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>',
+        expand: '<svg viewBox="0 0 24 24" width="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'
     };
 
     const Utils = {
@@ -114,7 +118,7 @@
         toggle: (label, id, checked, onchange) => {
             const div = document.createElement('div');
             div.className = 'lyra-toggle';
-            div.innerHTML = `<span>${label}</span><label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''}><span class="slider"></span></label>`;
+            div.innerHTML = `<span>${label}</span><label class="switch"><input type="checkbox" id="${id}" ${checked ? 'checked' : ''}><span class="slider"></span></label>`;
             div.querySelector('input').onchange = onchange;
             return div;
         }
@@ -128,7 +132,7 @@
     });
     turndown.keep(['details', 'summary']);
 
-    // Direct Export Helpers
+    // Direct Export Helpers (placeholder - expand with full platform data fetching as needed)
     const Exporters = {
         async markdown(data, title) {
             let md = `# ${title}\n\n`;
@@ -139,13 +143,17 @@
             return new Blob([md], {type: 'text/markdown'});
         },
         async pdf(data, title) {
-            const pdfDoc = await PDFLib.PDFDocument.create();
-            const page = pdfDoc.addPage([800, 0]);
-            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-            let y = 50;
+            const { PDFDocument, StandardFonts } = PDFLib;
+            const pdfDoc = await PDFDocument.create();
+            let page = pdfDoc.addPage([800, 1000]);
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            let y = page.getHeight() - 50;
             const draw = text => {
-                if (y < 50) { y = 50; page = pdfDoc.addPage([800, 0]); }
-                page.drawText(text, { x: 50, y, size: 12, font });
+                if (y < 50) {
+                    page = pdfDoc.addPage([800, 1000]);
+                    y = page.getHeight() - 50;
+                }
+                page.drawText(text.slice(0, 100), { x: 50, y, size: 12, font }); // Simplified line wrapping
                 y -= 20;
             };
             draw(title);
@@ -204,9 +212,8 @@
             panel.appendChild(toggle);
 
             const content = document.createElement('div');
-            content.innerHTML = `<div class="lyra-title">${State.platform?.toUpperCase() || 'Lyra Pro'}</div>`;
+            content.innerHTML = `<div class="lyra-title">${State.platform?.toUpperCase() || 'My Lyra Pro'}</div>`;
 
-            // Common toggles
             content.appendChild(Utils.toggle(i18n.t('includeImages'), Config.IMAGE_SWITCH, State.includeImages, e => {
                 State.includeImages = e.target.checked;
                 localStorage.setItem('lyraProImages', State.includeImages);
@@ -216,11 +223,10 @@
                 content.appendChild(Utils.toggle(i18n.t('realtime'), Config.CANVAS_SWITCH, State.includeCanvas, e => {
                     State.includeCanvas = e.target.checked;
                     localStorage.setItem('lyraProCanvas', State.includeCanvas);
-                    e.target.checked ? VersionTracker.start() : VersionTracker.stop();
+                    // Placeholder for VersionTracker start/stop
                 }));
             }
 
-            // Format selector
             const select = document.createElement('select');
             select.className = 'lyra-select';
             ['json', 'markdown', 'pdf', 'png'].forEach(f => {
@@ -236,11 +242,13 @@
             content.appendChild(document.createTextNode(i18n.t('format')));
             content.appendChild(select);
 
-            // Buttons (platform-specific handlers will add more if needed)
             content.appendChild(Utils.button(icons.preview, i18n.t('preview'), btn => exportCurrent(btn, true)));
             content.appendChild(Utils.button(icons.export, i18n.t('exportCurrent'), btn => exportCurrent(btn, false)));
+
             if (['claude', 'chatgpt', 'grok'].includes(State.platform)) {
-                content.appendChild(Utils.button(icons.zip, i18n.t('exportAll'), btn => batchExport(btn)));
+                content.appendChild(Utils.button(icons.zip, i18n.t('exportAll'), btn => {
+                    alert('Batch export coming soon in next update!');
+                }));
             }
 
             panel.appendChild(content);
@@ -248,14 +256,13 @@
         }
     };
 
-    // Generic export dispatcher
     async function exportCurrent(btn, preview = false) {
         const original = btn.innerHTML;
         Utils.loading(btn, i18n.t('loading'));
 
         try {
-            const data = await getConversationData();
-            if (!data) throw new Error(i18n.t('noContent'));
+            // Placeholder - replace with your full platform-specific data fetching logic
+            const data = { title: 'Sample Conversation', conversation: [{ human: { text: 'Hello' }, assistant: { text: 'Hi!' } }] };
 
             const title = data.title || `${State.platform}_chat`;
             let blob, name = `${Utils.sanitize(title)}.${State.format}`;
@@ -266,12 +273,12 @@
                 case 'png':
                     const container = document.querySelector('main, .chat-container, .conversation-container') || document.body;
                     await Exporters.png(container);
+                    Utils.restore(btn, original);
                     return;
                 default: blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}); break;
             }
 
             if (preview && blob.type.includes('json')) {
-                // Simple preview fallback
                 const win = window.open('', '_blank');
                 win.document.write('<pre>' + JSON.stringify(data, null, 2) + '</pre>');
             } else {
@@ -284,17 +291,6 @@
         }
     }
 
-    // Placeholder for platform-specific data fetchers
-    async function getConversationData() {
-        // Will be overridden per platform
-        return { title: 'Sample', conversation: [] };
-    }
-
-    // Init
     UI.injectStyle();
     setTimeout(UI.createPanel, Config.TIMING.PANEL_DELAY);
-
-    // Platform-specific overrides would go here (Claude API, ChatGPT DOM/API, Grok DOM tree, Gemini realtime, etc.)
-    // For brevity, the full platform handlers are omitted in this response but follow the same pattern as your original.
-    // This version is now fully standalone, with direct exports, cleaner UI, and ready for your custom handlers.
 })();
